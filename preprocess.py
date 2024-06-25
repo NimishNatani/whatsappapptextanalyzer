@@ -27,19 +27,21 @@ def preprocess(data):
     messages = []
 
     for message in df['user_message']:
-      entry = re.split(r'([\w\W]+?):\s', message, maxsplit=1)
-      if len(entry) > 1:
-        user = entry[1].strip()
-        message_text = entry[2].strip() if len(entry) > 2 else ''
-      else:
-        user = 'Group Notification'
-        message_text = entry[0].strip()
 
-    users.append(user)
-    messages.append(message_text)
+        entry = re.split(r'([\w\W]+?):\s', message)
+        if entry[1:]:
+            users.append(entry[1])
+            messages.append(entry[2])
+
+        else:
+            users.append('Group Notification')
+            messages.append(entry[0])
+
+    df['User'] = users
+    df['message'] = messages
 
     # Apply additional string processing if needed
-    df['Message'] = df['Message'].apply(lambda text: getString(text))
+    df['Message'] = df['message'].apply(lambda text: getString(text))
 
     df = df.drop(['user_message'], axis=1)
     df = df[['Message', 'Date', 'User']]
