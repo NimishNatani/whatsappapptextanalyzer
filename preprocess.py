@@ -28,10 +28,10 @@ def preprocess(data):
 
     for message in df['user_message']:
       entry = re.split(r'([\w\W]+?):\s', message, maxsplit=1)
-    if len(entry) > 1:
+      if len(entry) > 1:
         user = entry[1].strip()
         message_text = entry[2].strip() if len(entry) > 2 else ''
-    else:
+      else:
         user = 'Group Notification'
         message_text = entry[0].strip()
 
