@@ -15,53 +15,50 @@ def getString(text):
     return text.split('\n')[0]
 
 def preprocess(data):
-    pattern = '\d{1,2}/\d{1,2}/\d{2,4},\s\d{1,2}:\d{2}\s-\s'
-    messages = re.split(pattern,data)[1:]
-    dates = re.findall(pattern,data)
+    pattern = r'\d{1,2}/\d{1,2}/\d{2,4},\s\d{1,2}:\d{2}\s-\s'
+    messages = re.split(pattern, data)[1:]
+    dates = re.findall(pattern, data)
 
-    df= pd.DataFrame({'user_message':messages,
-                      'message_date':dates})
-    df['message_date'] = df['message_date'].apply(lambda text:gettimedate(text))
-    df.rename(columns={'message_date':'date'},inplace = True)
+    df = pd.DataFrame({'user_message': messages, 'message_date': dates})
+    df['message_date'] = df['message_date'].apply(lambda text: gettimedate(text))
+    df.rename(columns={'message_date': 'Date'}, inplace=True)
 
-    users =[]
-    messages=[]
+    users = []
+    messages = []
 
     for message in df['user_message']:
-        entry = re.split('([\w\W]+?):\s',message)
+        entry = re.split(r'([\w\W]+?):\s', message, maxsplit=1)
         if entry[1:]:
             users.append(entry[1])
             messages.append(entry[2])
-
         else:
             users.append('Group Notification')
             messages.append(entry[0])
 
     df['User'] = users
-    df['message'] = messages
+    df['Message'] = messages
 
-    df['message'] = df['message'].apply(lambda text:getString(text))
+    # Apply additional string processing if needed
+    df['Message'] = df['Message'].apply(lambda text: getString(text))
 
-    df = df.drop(['user_message'],axis=1)
-    df=df[['message','date','User']]
+    df = df.drop(['user_message'], axis=1)
+    df = df[['Message', 'Date', 'User']]
 
-    df = df.rename(columns={'message':'Message','date':'Date'})
+    # Convert the 'Date' column to datetime, handling errors by coercing invalid dates to NaT
+    df['Date'] = pd.to_datetime(df['Date'], errors='coerce')
 
-    df['Only Date'] = pd.to_datetime(df['Date']).dt.date
+    # Drop rows where 'Date' is NaT (if any)
+    df = df.dropna(subset=['Date'])
 
-    df['Year'] = pd.to_datetime(df['Date']).dt.year
-
-    df['Month_num'] = pd.to_datetime(df['Date']).dt.month
-
-    df['Month'] = pd.to_datetime(df['Date']).dt.month_name()
-
-    df['Day']= pd.to_datetime(df['Date']).dt.day
-
-    df['Day_name']= pd.to_datetime(df['Date']).dt.day_name()
-
-    df['Hour']= pd.to_datetime(df['Date']).dt.hour
-
-    df['Minute']= pd.to_datetime(df['Date']).dt.minute
+    # Extract date components
+    df['Only Date'] = df['Date'].dt.date
+    df['Year'] = df['Date'].dt.year
+    df['Month_num'] = df['Date'].dt.month
+    df['Month'] = df['Date'].dt.month_name()
+    df['Day'] = df['Date'].dt.day
+    df['Day_name'] = df['Date'].dt.day_name()
+    df['Hour'] = df['Date'].dt.hour
+    df['Minute'] = df['Date'].dt.minute
 
     return df
 
