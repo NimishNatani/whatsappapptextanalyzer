@@ -33,17 +33,23 @@ def fetchbusyusers(df):
     return count,newdf
 
 def createwordcloud(selected_user,df):
-    file = open('stop_hinglish.txt','r')
-    stopwords = file.read()
-    stopwords = stopwords.split("\n")
-    if selected_user!="Overall":
-        df=df[df['User']==selected_user]
-    
-    wc = WordCloud(width=500,height=500,min_font_size=10,background_color='white',stopwords=stopwords)
-
-    df_wc = wc.generate(df['Message'].str.cat(sep=" "))
-
-    return df_wc
+    try:
+        file = open('stop_hinglish.txt','r')
+        stopwords = file.read().split("\n")
+        file.close()
+        
+        if selected_user != "Overall":
+            df = df[df['User'] == selected_user]
+        
+        if df.shape[0] > 0:
+            wc = WordCloud(width=500, height=500, min_font_size=10, background_color='white', stopwords=stopwords)
+            df_wc = wc.generate(df['Message'].str.cat(sep=" "))
+            return df_wc
+        else:
+            return False
+    except Exception as e:
+        print(f"Error: {e}")
+        return False
 
 def getcommonwords(selected_user,df):
 
