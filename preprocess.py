@@ -15,6 +15,15 @@ def gettimedate(string):
 def getString(text):
     return text.split('\n')[0]
 
+def check_date_format(date_str, date_format):
+    try:
+        # Try to parse the date string with the given format
+        parsed_date = pd.to_datetime(date_str, format=date_format)
+        return True
+    except ValueError:
+        # If parsing fails, return False
+        return False
+
 def preprocess(data):
     pattern = r'\d{1,2}/\d{1,2}/\d{2,4}\s*,?\s*\d{1,2}:\d{2}\s*(?:[ap]\.?m\.?)?\s*-\s*'
     messages = re.split(pattern, data)[1:]
@@ -48,20 +57,29 @@ def preprocess(data):
     df = df[['Message', 'Date', 'User']]
 
     # Convert the 'Date' column to datetime, handling errors by coercing invalid dates to NaT
-    df['Date'] = pd.to_datetime(df['Date'], errors='coerce')
+    # df['Date'] = pd.to_datetime(df['Date'], errors='coerce')
 
     # Drop rows where 'Date' is NaT (if any)
     df = df.dropna(subset=['Date'])
+    format='%d/%m/%y %I:%M %p'
+    if check_date_format(df['Date'][0],format)==False:
+        format='%d/%m/%Y %I:%M %p'
 
     # Extract date components
-    df['Only Date'] = df['Date'].dt.date
-    df['Year'] = df['Date'].dt.year
-    df['Month_num'] = df['Date'].dt.month
-    df['Month'] = df['Date'].dt.month_name()
-    df['Day'] = df['Date'].dt.day
-    df['Day_name'] = df['Date'].dt.day_name()
-    df['Hour'] = df['Date'].dt.hour
-    df['Minute'] = df['Date'].dt.minute
+    df['Only date'] = pd.to_datetime(df['Date'],format=format).dt.date
+
+    df['Year'] = pd.to_datetime(df['Date']).dt.year
+
+    df['Month_num'] = pd.to_datetime(df['Only date']).dt.month
+
+    df['Month'] = pd.to_datetime(df['Only date']).dt.month_name()
+
+    df['Day'] = pd.to_datetime(df['Only date']).dt.day
+
+    df['Day_name'] = pd.to_datetime(df['Only date']).dt.day_name()
+
+    df['Hour'] = pd.to_datetime(df['Date']).dt.hour
+
+    df['Minute'] = pd.to_datetime(df['Date']).dt.minute
 
     return df
-

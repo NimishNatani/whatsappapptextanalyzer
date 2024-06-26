@@ -15,6 +15,7 @@ if uploaded_file is not None:
     data = bytes_data.decode("utf-8")
 
     df = preprocess.preprocess(data)
+    st.dataframe(df)
 
     user_list = df['User'].unique().tolist()
 
