@@ -64,6 +64,10 @@ def preprocess(data):
     format='%d/%m/%y %I:%M %p'
     if check_date_format(df['Date'][0],format)==False:
         format='%d/%m/%Y %I:%M %p'
+        if check_date_format(df['Date'][0],format)==False:
+            format='%d/%m/%Y %H:%M'
+            if check_date_format(df['Date'][0],format)==False:
+                format='%d/%m/%y %H:%M'
 
     # Extract date components
     df['Only date'] = pd.to_datetime(df['Date'],format=format).dt.date
